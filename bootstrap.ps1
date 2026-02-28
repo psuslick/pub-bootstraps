@@ -33,19 +33,6 @@ function Retry-Download {
     return $false
 }
 
-function Run-Installer {
-    param(
-        [string]$Path,
-        [string]$Args
-    )
-
-    Log "Installer command: `"$Path $Args`""
-
-    $p = Start-Process -FilePath $Path -ArgumentList $Args -PassThru -Wait
-    Log "Installer exited with code: $($p.ExitCode)"
-    return $p.ExitCode
-}
-
 function Retry-OAuth {
     param(
         [string]$RepoUrl,
@@ -137,8 +124,12 @@ $Status = @{
 
 Log "=== Installing Git silently ==="
 if (Retry-Download "https://github.com/git-for-windows/git/releases/download/v2.45.1.windows.1/Git-2.45.1-64-bit.exe" "C:\git-installer.exe") {
-    $exit = Run-Installer "C:\git-installer.exe" "/VERYSILENT /NORESTART"
-    if ($exit -eq 0) { $Status.Git = $true }
+    Log 'Running Git installer: C:\git-installer.exe /VERYSILENT /NORESTART'
+    $gitProc = Start-Process -FilePath "C:\git-installer.exe" `
+                             -ArgumentList @('/VERYSILENT','/NORESTART') `
+                             -PassThru -Wait
+    Log "Git installer exited with code: $($gitProc.ExitCode)"
+    if ($gitProc.ExitCode -eq 0) { $Status.Git = $true }
 }
 
 # ============================================================
@@ -147,13 +138,22 @@ if (Retry-Download "https://github.com/git-for-windows/git/releases/download/v2.
 
 Log "=== Installing Node.js silently ==="
 if (Retry-Download "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi" "C:\node.msi") {
-    $exit = Run-Installer "msiexec.exe" "/i C:\node.msi /quiet /norestart"
-    if ($exit -eq 0) { $Status.Node = $true }
+    Log 'Running Node installer: msiexec.exe /i C:\node.msi /quiet /norestart'
+    $nodeProc = Start-Process -FilePath "msiexec.exe" `
+                              -ArgumentList @('/i','C:\node.msi','/quiet','/norestart') `
+                              -PassThru -Wait
+    Log "Node installer exited with code: $($nodeProc.ExitCode)"
+    if ($nodeProc.ExitCode -eq 0) { $Status.Node = $true }
 }
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
-if (npm -v) { $Status.Npm = $true }
+try {
+    npm -v | Out-Null
+    $Status.Npm = $true
+} catch {
+    Log "npm not available after Node install."
+}
 
 # ============================================================
 # Install VS Code
@@ -161,8 +161,12 @@ if (npm -v) { $Status.Npm = $true }
 
 Log "=== Installing VS Code silently ==="
 if (Retry-Download "https://update.code.visualstudio.com/latest/win32-x64-user/stable" "C:\vscode-installer.exe") {
-    $exit = Run-Installer "C:\vscode-installer.exe" "/VERYSILENT /MERGETASKS=!runcode"
-    if ($exit -eq 0) { $Status.VSCode = $true }
+    Log 'Running VS Code installer: C:\vscode-installer.exe /VERYSILENT /MERGETASKS=!runcode'
+    $codeProc = Start-Process -FilePath "C:\vscode-installer.exe" `
+                              -ArgumentList @('/VERYSILENT','/MERGETASKS=!runcode') `
+                              -PassThru -Wait
+    Log "VS Code installer exited with code: $($codeProc.ExitCode)"
+    if ($codeProc.ExitCode -eq 0) { $Status.VSCode = $true }
 }
 
 # ============================================================
