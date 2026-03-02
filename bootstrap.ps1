@@ -111,6 +111,7 @@ $Status = @{
     Node = $false
     Npm = $false
     VSCode = $false
+    GitHubDesktop = $false
     OAuth = $false
     RepoCloned = $false
     BackendDeps = $false
@@ -170,6 +171,27 @@ if (Retry-Download "https://update.code.visualstudio.com/latest/win32-x64-user/s
 }
 
 # ============================================================
+# Install GitHub Desktop
+# ============================================================
+
+Log "=== Installing GitHub Desktop silently ==="
+
+$ghUrl = "https://central.github.com/deployments/desktop/desktop/latest/win32"
+$ghInstaller = "C:\GitHubDesktopSetup.exe"
+
+if (Retry-Download $ghUrl $ghInstaller) {
+    Log 'Running GitHub Desktop installer: GitHubDesktopSetup.exe /s'
+    $ghProc = Start-Process -FilePath $ghInstaller `
+                            -ArgumentList @('/s') `
+                            -PassThru -Wait
+    Log "GitHub Desktop installer exited with code: $($ghProc.ExitCode)"
+
+    if ($ghProc.ExitCode -eq 0) {
+        $Status.GitHubDesktop = $true
+    }
+}
+
+# ============================================================
 # Git Config + OAuth
 # ============================================================
 
@@ -197,14 +219,12 @@ if ($Status.OAuth) {
 # Wait for server + client folders
 # ============================================================
 
-# Wait for server folder
 for ($i = 1; $i -le 20; $i++) {
     if (Test-Path "C:\link-preview-app\server") { break }
     Start-Sleep -Milliseconds 250
 }
 Log "Server folder detected."
 
-# Wait for client folder
 for ($i = 1; $i -le 20; $i++) {
     if (Test-Path "C:\link-preview-app\client") { break }
     Start-Sleep -Milliseconds 250
@@ -252,6 +272,12 @@ if (Test-Path $edge) {
 $code = "C:\Users\WDAGUtilityAccount\AppData\Local\Programs\Microsoft VS Code\Code.exe"
 if (Test-Path $code) {
     Start-Process $code -ArgumentList "C:\link-preview-app"
+}
+
+# Auto-launch GitHub Desktop
+$ghExe = "C:\Users\WDAGUtilityAccount\AppData\Local\GitHubDesktop\GitHubDesktop.exe"
+if (Test-Path $ghExe) {
+    Start-Process $ghExe
 }
 
 # ============================================================
