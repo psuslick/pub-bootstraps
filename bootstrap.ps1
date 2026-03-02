@@ -194,6 +194,24 @@ if ($Status.OAuth) {
 }
 
 # ============================================================
+# Wait for server + client folders
+# ============================================================
+
+# Wait for server folder
+for ($i = 1; $i -le 20; $i++) {
+    if (Test-Path "C:\link-preview-app\server") { break }
+    Start-Sleep -Milliseconds 250
+}
+Log "Server folder detected."
+
+# Wait for client folder
+for ($i = 1; $i -le 20; $i++) {
+    if (Test-Path "C:\link-preview-app\client") { break }
+    Start-Sleep -Milliseconds 250
+}
+Log "Client folder detected."
+
+# ============================================================
 # Backend
 # ============================================================
 
