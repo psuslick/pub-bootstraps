@@ -235,7 +235,7 @@ if ($Status.RepoCloned) {
         -Path "C:\link-preview-app\client" `
         -LogFile "C:\bootstrap-logs\npm-frontend.log"
 
-    Start-Process powershell -ArgumentList "cd C:\link-preview-app\client; npm run dev"
+    Start-Process powershell -ArgumentList "cd C:\link-preview-app\client; npm run dev -- --host 0.0.0.0"
 }
 
 # ============================================================
