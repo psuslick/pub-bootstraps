@@ -138,7 +138,7 @@ if (Retry-Download "https://github.com/git-for-windows/git/releases/download/v2.
 # ============================================================
 
 Log "=== Installing Node.js silently ==="
-if (Retry-Download "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi" "C:\node.msi") {
+if (Retry-Download "https://nodejs.org/dist/v20.19.0/node-v20.19.0-x64.msi" "C:\node.msi") {
     Log 'Running Node installer: msiexec.exe /i C:\node.msi /quiet /norestart'
     $nodeProc = Start-Process -FilePath "msiexec.exe" `
                               -ArgumentList @('/i','C:\node.msi','/quiet','/norestart') `
